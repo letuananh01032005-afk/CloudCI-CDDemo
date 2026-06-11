@@ -3,7 +3,7 @@ name: Deploy Website to GitHub Pages
 on:
   push:
     branches:
-      - "chủ yếu" # Vì repo của bạn đang dùng tên nhánh mặc định tiếng Việt là "chủ yếu"
+      - "main" # Vì repo của bạn đang dùng tên nhánh mặc định tiếng Việt là "chủ yếu"
 
 # Cấp quyền cho workflow để có thể deploy lên Pages
 permissions:
