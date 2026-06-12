@@ -3,17 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud CI/CD Demo</title>
+    <title>Giới thiệu về GitHub Actions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
-        h1 { color: #333; }
-        p { color: #666; font-size: 1.2em; }
+        /* --- TÙY CHỈNH BIẾN MÀU SẮC GIAO DIỆN --- */
+        :root {
+            --bg-main: #0d1117;
+            --bg-card: #161b22;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-white: #f0f6fc;
+            --accent-blue: #58a6ff;
+            --accent-green: #2ea44f;
+            --gradient-purple: linear-gradient(135deg, #7928ca, #ff0080);
+        }
+
+        /* --- CSS CƠ BẢN & RESET --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* --- PHẦN HERO (ĐẦU TRANG) --- */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        /* Tạo điểm nhấn logo GitHub phát sáng phía sau */
+        .hero::before {
+            content: '\f09b';
+            font-family: 'Font Awesome 6 Brands';
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -20%);
+            font-size: 15rem;
+            color: rgba(255, 255, 255, 0.02);
+            z-index: 0;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: var(--text-white);
+            margin-bottom: 15px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, #58a6ff, #bc8cff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            color: #8b949e;
+            position: relative;
+            z-index: 1;
+        }
+
+        .badge {
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent-blue);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 1px solid rgba(88, 166, 255, 0.2);
+        }
+
+        /* --- TIÊU ĐỀ CÁC MỤC --- */
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--text-white);
+            margin: 50px 0 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--accent-blue);
+        }
+
+        /* --- BẢO DỰA LƯỚI THÔNG TIN (FEATURES GRID) --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #8b949e;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            color: var(--text-white);
+            margin-bottom: 10px;
+            font-size: 1.25rem;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: #8b949e;
+        }
+
+        /* --- THÀNH PHẦN CORE CONCEPTS (QUY TRÌNH) --- */
+        .workflow-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: var(--gradient-purple);
+            color: var(--text-white);
+            font-weight: bold;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-content h4 {
+            color: var(--text-white);
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            color: #8b949e;
+            font-size: 0.95rem;
+        }
+
+        /* --- CODE BLOCK (MẪU FILE YAML) --- */
+        .code-header {
+            background-color: #1f242c;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            padding: 10px 20px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+
+        pre {
+            background-color: #05070a;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 40px;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #ff7b72;
+        }
+
+        .c-comment { color: #8b949e; }
+        .c-key { color: #79c0ff; }
+        .c-val { color: #a5d6ff; }
+        .c-string { color: #7eea85; }
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: #8b949e;
+        }
+
+        footer i {
+            color: #ff7b72;
+        }
+
+        /* Tương thích thiết bị di động */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
-    <h1>Cloud CI/CD Demo Website</h1>
-    <p>Xin chào! Website này được deploy tự động bằng GitHub Actions.</p>
-    <p>Phiên bản: 1.0</p>
-    <p>hi chào cậu</p>
+
+    <div class="container">
+        
+        <header class="hero">
+            <span class="badge">CI/CD & Automation Platform</span>
+            <h1>Tự động hóa với <span>GitHub Actions</span></h1>
+            <p>Giải pháp mạnh mẽ giúp bạn xây dựng (Build), kiểm thử (Test), và triển khai (Deploy) mã nguồn tự động ngay trên kho chứa GitHub.</p>
+        </header>
+
+        <section>
+            <h2 class="section-title"><i class="fa-solid fa-star"></i> Tại sao nên dùng GitHub Actions?</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-cloud-flash"></i></div>
+                    <h3>Tích hợp trực tiếp</h3>
+                    <p>Không cần cài đặt công cụ bên thứ ba. Mọi quy trình CI/CD được quản lý trực tiếp ngay tại các tab công việc trong kho mã nguồn của bạn.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h3>Kho Actions khổng lồ</h3>
+                    <p>Truy cập vào GitHub Marketplace với hàng ngàn Actions có sẵn do cộng đồng đóng gói để tái sử dụng, giúp tiết kiệm thời gian viết mã cấu hình.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fa-solid fa-cubes"></i></div>
+                    <h3>Hỗ trợ mọi ngôn ngữ</h3>
+                    <p>Hoạt động mượt mà với Node.js, Python, Java, PHP, Ruby, C/C++, Android, iOS và mọi nền tảng đám mây phổ biến hiện nay.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title"><i class="fa-solid fa-diagram-project"></i> Thành phần cốt lõi</h2>
+            <div class="workflow-box">
+                <p>Một chuỗi tự động hóa của GitHub Actions hoạt động dựa trên cơ chế bắt sự kiện, bao gồm các thành phần cơ bản sau:</p>
+                
+                <div class="steps">
+                    <div class="step-item">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Event (Sự kiện)</h4>
+                            <p>Là tác vụ kích hoạt chạy tự động, ví dụ như hành động: <code>git push</code> code mới, mở một bản <code>Pull Request</code>, hoặc chạy theo lịch hẹn giờ (Cron job).</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Workflow (Quy trình)</h4>
+                            <p>Là một tiến trình tự động hóa tổng thể được thiết lập bằng file định dạng <code>.yml</code> nằm trong thư mục <code>.github/workflows/</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Job (Công việc) & Step (Bước làm)</h4>
+                            <p>Mỗi Workflow chứa một hoặc nhiều Jobs chạy song song hoặc tuần tự. Trong mỗi Job lại chứa các Steps (các lệnh cụ thể shell script hoặc Action đóng gói sẵn) để xử lý logic.</p>
+                        </div>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Runner (Môi trường chạy)</h4>
+                            <p>Là các máy chủ ảo (Ubuntu Linux, Windows, hoặc macOS) do GitHub cung cấp hoặc do bạn tự cấu hình để thực thi các lệnh trong Job.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="section-title"><i class="fa-solid fa-code"></i> Cấu trúc một File cấu hình mẫu</h2>
+            <div class="code-header">
+                <span><i class="fa-regular fa-file-code"></i> .github/workflows/main.yml</span>
+                <span>YAML</span>
+            </div>
+            <pre><code><span class="c-comment"># Tên của quy trình tự động hóa</span>
+<span class="c-key">name:</span> <span class="c-val">CI Demo Workflow</span>
+
+<span class="c-comment"># Sự kiện kích hoạt quy trình (Khi push vào nhánh main)</span>
+<span class="c-key">on:</span>
+  <span class="c-key">push:</span>
+    <span class="c-key">branches:</span> [ <span class="c-string">"main"</span> ]
+
+<span class="c-comment"># Danh sách các công việc cần làm</span>
+<span class="c-key">jobs:</span>
+  <span class="c-key">build-and-test:</span>
+    <span class="c-key">runs-on:</span> <span class="c-val">ubuntu-latest</span> <span class="c-comment"># Sử dụng hệ điều hành Ubuntu máy ảo</span>
+
+    <span class="c-key">steps:</span>
+      <span class="c-comment"># Bước 1: Lấy mã nguồn từ kho GitHub về máy ảo</span>
+      <span class="c-key">- name:</span> <span class="c-val">Checkout source code</span>
+        <span class="c-key">uses:</span> <span class="c-val">actions/checkout@v4</span>
+
+      <span class="c-comment"># Bước 2: Chạy câu lệnh kiểm thử hoặc build</span>
+      <span class="c-key">- name:</span> <span class="c-val">Run a build script</span>
+        <span class="c-key">run:</span> |
+          <span class="c-string">echo "Bắt đầu kiểm tra hệ thống..."</span>
+          <span class="c-string">echo "Quy trình CI/CD đã kích hoạt và chạy thành công!"</span></code></pre>
+        </section>
+
+        <footer>
+            <p>Made with <i class="fa-solid fa-heart"></i> for DevOps Learning Community &copy; 2026</p>
+        </footer>
+
+    </div>
+
 </body>
 </html>
